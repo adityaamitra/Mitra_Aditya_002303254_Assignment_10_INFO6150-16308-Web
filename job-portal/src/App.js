@@ -8,10 +8,13 @@ import AvailableJobsPage from './components/AvailableJobsPage';
 import AddJobPage from './components/AddJobPage'; 
 import AuthRoute from './components/AuthRoute'; 
 import EmployeePage from './components/EmployeePage';
+import { Provider } from 'react-redux';
+import store from './store'; 
 
 
 function App() {
   return (
+    <Provider store={store}>
     <Router>
       <Routes>
         
@@ -72,6 +75,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </Provider>
   );
 }
 

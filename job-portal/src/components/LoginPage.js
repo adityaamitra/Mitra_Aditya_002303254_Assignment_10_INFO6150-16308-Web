@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../utils/api';
 import { TextField, Button, Container, Box, Typography } from '@mui/material';
+import { useDispatch } from 'react-redux'; 
+import { setUser, logout } from '../store'; 
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -9,10 +11,9 @@ function LoginPage() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch(); 
 
- 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
   const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
   const handleLogin = async (e) => {
@@ -35,9 +36,11 @@ function LoginPage() {
 
     try {
       const response = await login(email, password);
-      const { token, type } = response;
+      const { token, type, user } = response; 
 
       localStorage.setItem('token', token);
+
+      dispatch(setUser(user));  
 
       if (type === 'admin') {
         navigate('/admin');
@@ -48,6 +51,22 @@ function LoginPage() {
       alert('Login failed');
     }
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      dispatch(logout());
+      localStorage.removeItem('token');
+      navigate('/login');  
+    };
+
+    
+    window.onpopstate = handleBeforeUnload;
+    
+    return () => {
+     
+      window.onpopstate = null;
+    };
+  }, [dispatch, navigate]);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -75,8 +94,8 @@ function LoginPage() {
             fullWidth
             margin="normal"
             autoFocus
-            error={!!emailError} 
-            helperText={emailError} 
+            error={!!emailError}
+            helperText={emailError}
           />
           <TextField
             label="Password"
@@ -86,8 +105,8 @@ function LoginPage() {
             required
             fullWidth
             margin="normal"
-            error={!!passwordError} 
-            helperText={passwordError} 
+            error={!!passwordError}
+            helperText={passwordError}
           />
           <Button
             type="submit"
